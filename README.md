@@ -1,6 +1,6 @@
 # N-body Parallel Simulation
 
-A high-performance N-body gravitational simulation implementing serial, OpenMP, and MPI parallelisation strategies for performance comparison and analysis.
+A high-performance N-body gravitational simulation implementing serial, OpenMP, and MPI parallelisation strategies for performance comparison and analysis. Completed as part of High Performance Computing coursework.
 
 ## Overview
 
