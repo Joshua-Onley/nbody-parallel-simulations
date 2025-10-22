@@ -48,7 +48,13 @@ Parallelises the force calculation loop using:
 
 ### MPI Version (`MPI.cpp`)
 
-**Note**: The current MPI implementation is identical to the OpenMP version and requires proper MPI parallelisation to be added.
+Distributes the computation across multiple processes using:
+- `MPI_Init` and `MPI_Finalize` for MPI environment setup/teardown
+- Process-local force arrays for independent computation
+- Rank-based work distribution using strided loop iteration (`i = rank; i < N; i += size`)
+- `MPI_Allreduce` with `MPI_SUM` operation to combine forces from all processes
+- Each process computes forces for a subset of bodies based on its rank
+- Synchronisation ensures all processes have consistent position and force data
 
 ### Visualisation Version (`visualisation.cpp`)
 
@@ -158,28 +164,21 @@ The simulation outputs execution time in seconds. Key metrics for comparison:
 - **OpenMP**: Scales with thread count, limited by memory bandwidth and critical section overhead
 - **MPI**: Requires substantial communication for position/force data distribution
 
-## Known Issues and Limitations
+## Limitations
 
-1. **MPI Implementation**: Currently identical to OpenMP version - proper MPI parallelisation needed
-2. **Force Calculation Bug**: In OpenMP/MPI versions, `local_force[j]` subtracts force (Newton's 3rd law) but should add the opposite force
-3. **Critical Section Bottleneck**: The force accumulation critical section can limit OpenMP scalability
-4. **Visualisation Performance**: The visualisation version is not optimised for performance (single-threaded with rendering overhead)
-5. **2D Projection**: Visualisation only displays x-y coordinates; z-axis depth not represented
-6. **Numerical Integration**: Simple Euler method; more accurate schemes (e.g., Verlet, RK4) would improve accuracy
-7. **Collision Handling**: No softening parameter or collision detection implemented
+1. **Visualisation Performance**: The visualisation version is not optimised for performance (single-threaded with rendering overhead)
+2. **2D Projection**: Visualisation only displays x-y coordinates; z-axis depth not represented
+3. **Numerical Integration**: Simple Euler method; more accurate schemes (e.g., Verlet, RK4) would improve accuracy
+4. **Collision Handling**: No softening parameter or collision detection implemented
 
 ## Future Improvements
 
-- Implement proper MPI domain decomposition
 - Add Barnes-Hut or Fast Multipole Method for O(N log N) complexity
 - Enhance visualisation with 3D rendering (OpenGL/Vulkan)
 - Add interactive camera controls and zoom functionality
-- Use reduction clauses instead of critical sections in OpenMP
 - Add energy conservation checks for validation
 - Implement more sophisticated integration schemes (Verlet, leapfrog, RK4)
-- Add gravitational softening to prevent singularities
-- Implement trajectory trails in visualisation
-- Add ability to save/load simulation states
+
 
 ## Requirements
 
@@ -197,15 +196,3 @@ The simulation outputs execution time in seconds. Key metrics for comparison:
   - Window module
   - System module
 
-## Licence
-
-This project was developed for educational purposes as part of an HPC module.
-
-## Author
-
-Submitted as coursework for High-Performance Computing module.
-
----
-
-**Computational Complexity**: O(N² × T/dt) per simulation  
-**Memory Usage**: O(N) for positions, velocities, forces, and masses
